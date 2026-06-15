@@ -1,20 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
 
 :root {
-  /* Color Palette: Blue (כחול) and Light Blue (תכלת) */
-  --color-blue-dark: #0A2540;
-  --color-blue-main: #1456A3;
-  --color-blue-light: #4D96FF;
-  --color-blue-pale: #E6F0FA;
+  /* Color Palette: Soft Lilac & Sky Blue */
+  --color-blue-dark: #8C75A1; /* Dark Lilac */
+  --color-blue-main: #B098CE; /* Soft Lilac */
+  --color-blue-light: #D5C6E0; /* Light Lilac */
+  --color-blue-pale: #F4F0F8; /* Pale Lilac */
   
   --color-text-main: #333333;
   --color-text-light: #666666;
-  --color-bg-main: #F5F7FA;
+  --color-bg-main: #FAFAFA; /* Off-White / White */
   --color-white: #FFFFFF;
   
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
+  --color-action-main: #87CEEB; /* Sky Blue */
+  --color-action-hover: #5F9EA0; /* Deeper Blue */
+  
+  --color-success: #76C893;
+  --color-warning: #E9C46A;
+  --color-danger: #E76F51;
 
   --border-radius-sm: 4px;
   --border-radius-md: 8px;
@@ -153,22 +156,22 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-primary {
-  background-color: var(--color-blue-main);
+  background-color: var(--color-action-main);
   color: var(--color-white);
 }
 
 .btn-primary:hover {
-  background-color: var(--color-blue-dark);
+  background-color: var(--color-action-hover);
 }
 
 .btn-outline {
-  border: 1px solid var(--color-blue-main);
-  color: var(--color-blue-main);
+  border: 1px solid var(--color-action-main);
+  color: var(--color-action-main);
   background-color: transparent;
 }
 
 .btn-outline:hover {
-  background-color: var(--color-blue-pale);
+  background-color: #FDF4EB;
 }
 
 /* Grid layout for Dashboard */

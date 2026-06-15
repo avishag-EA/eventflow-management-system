@@ -18,6 +18,7 @@ export type Event = {
   audienceType: 'open' | 'invite-only';
   attendanceMandatory: boolean;
   invitedDepartments: string[];
+  estimatedHeadcount?: number;
   schedule: string;
   resources: {
     tech: boolean;
@@ -74,6 +75,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       audienceType: 'open',
       attendanceMandatory: false,
       invitedDepartments: [],
+      estimatedHeadcount: 150,
       schedule: '09:00 התכנסות\n10:00 פתיחה\n12:00 הפסקת צהריים\n14:00 סיום',
       resources: { tech: true, av: true, catering: 'premium', seating: true, lecture: true, gifts: true },
       budget: 50000,
@@ -90,6 +92,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       audienceType: 'invite-only',
       attendanceMandatory: true,
       invitedDepartments: ['מחלקת פיתוח'],
+      estimatedHeadcount: 50,
       schedule: '16:00 התכנסות\n16:30 ברכות\n17:30 סיום',
       resources: { tech: false, av: true, catering: 'basic', seating: false, lecture: false, gifts: true },
       budget: 5000,
