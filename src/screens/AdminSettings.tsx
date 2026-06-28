@@ -1,7 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Settings, Shield, Bell } from 'lucide-react';
+import { useStore } from '../store/StoreContext';
 
 const AdminSettings: React.FC = () => {
+  const { eventTypes, setEventTypes } = useStore();
+  const [newEventType, setNewEventType] = useState('');
+
+  const handleAddEventType = () => {
+    if (newEventType.trim() && !eventTypes.includes(newEventType.trim())) {
+      setEventTypes([...eventTypes, newEventType.trim()]);
+      setNewEventType('');
+    }
+  };
+
+  const handleRemoveEventType = (typeToRemove: string) => {
+    if (window.confirm(`האם אתה בטוח שברצונך למחוק את סוג האירוע "${typeToRemove}"?`)) {
+      setEventTypes(eventTypes.filter(t => t !== typeToRemove));
+    }
+  };
+
   return (
     <div>
       <h1 style={{ marginBottom: '2rem', color: 'var(--color-blue-dark)' }}>הגדרות מערכת (Admin)</h1>
@@ -13,16 +30,23 @@ const AdminSettings: React.FC = () => {
             <h2 style={{ margin: 0 }}>סוגי אירועים</h2>
           </div>
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {['הרמת כוסית', 'כנס מקצועי', 'האקתון', 'מסיבת חברה', 'יום גיבוש'].map((type, i) => (
+            {eventTypes.map((type, i) => (
               <li key={i} style={{ padding: '0.75rem', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between' }}>
                 <span>{type}</span>
-                <button style={{ color: 'var(--color-danger)', background: 'none', border: 'none', cursor: 'pointer' }}>הסר</button>
+                <button onClick={() => handleRemoveEventType(type)} style={{ color: 'var(--color-danger)', background: 'none', border: 'none', cursor: 'pointer' }}>הסר</button>
               </li>
             ))}
           </ul>
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-            <input type="text" placeholder="הוסף סוג אירוע..." style={{ flex: 1 }} />
-            <button className="btn btn-primary">הוסף</button>
+            <input 
+              type="text" 
+              placeholder="הוסף סוג אירוע..." 
+              style={{ flex: 1, padding: '0.5rem' }} 
+              value={newEventType}
+              onChange={e => setNewEventType(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddEventType()}
+            />
+            <button className="btn btn-primary" onClick={handleAddEventType}>הוסף</button>
           </div>
         </div>
 

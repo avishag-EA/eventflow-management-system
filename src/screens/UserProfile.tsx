@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../store/StoreContext';
-import { UserCircle, Camera } from 'lucide-react';
+import { UserCircle } from 'lucide-react';
 
 const UserProfile: React.FC = () => {
   const { currentUser, updateUser } = useStore();
@@ -48,17 +48,26 @@ const UserProfile: React.FC = () => {
             </div>
             
             <div className="form-group" style={{ width: '100%', marginBottom: 0 }}>
-              <label>כתובת תמונה (URL)</label>
+              <label>העלאת תמונת פרופיל</label>
               <input 
-                type="url" 
-                name="profilePicture" 
-                value={formData.profilePicture} 
-                onChange={handleChange} 
-                placeholder="https://example.com/my-photo.jpg" 
+                type="file" 
+                accept="image/*" 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const imageUrl = URL.createObjectURL(file);
+                    setFormData({ ...formData, profilePicture: imageUrl });
+                    setSuccess(false);
+                  }
+                }}
+                style={{
+                  padding: '0.5rem',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  width: '100%',
+                  background: 'white'
+                }}
               />
-              <span style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', marginTop: '0.25rem' }}>
-                * הדבקת כתובת אינטרנט של תמונה
-              </span>
             </div>
           </div>
 

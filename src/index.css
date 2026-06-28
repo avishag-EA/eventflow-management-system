@@ -1,19 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap');
 
 :root {
-  /* Color Palette: Soft Lilac & Sky Blue */
-  --color-blue-dark: #8C75A1; /* Dark Lilac */
-  --color-blue-main: #B098CE; /* Soft Lilac */
-  --color-blue-light: #D5C6E0; /* Light Lilac */
-  --color-blue-pale: #F4F0F8; /* Pale Lilac */
+  /* Color Palette: Golden Yellow & Amber */
+  --color-blue-dark: #B28900; /* Dark Yellow */
+  --color-blue-main: #F5BC00; /* Main Vibrant Yellow */
+  --color-blue-light: #FCE17A; /* Light Yellow */
+  --color-blue-pale: #FFF9E6; /* Pale Yellow Backgrounds */
   
   --color-text-main: #333333;
   --color-text-light: #666666;
   --color-bg-main: #FAFAFA; /* Off-White / White */
   --color-white: #FFFFFF;
   
-  --color-action-main: #87CEEB; /* Sky Blue */
-  --color-action-hover: #5F9EA0; /* Deeper Blue */
+  --color-action-main: #F58A00; /* Amber / Orange Action */
+  --color-action-hover: #CC7300; /* Deeper Amber */
   
   --color-success: #76C893;
   --color-warning: #E9C46A;
@@ -35,8 +35,7 @@
 }
 
 body {
-  /* Using "BN ANNA" as primary, falling back to Assistant for rendering if BN ANNA isn't installed locally */
-  font-family: 'BN ANNA', 'Assistant', sans-serif;
+  font-family: 'Heebo', sans-serif;
   background-color: var(--color-bg-main);
   color: var(--color-text-main);
   direction: rtl; /* Important: Hebrew RTL */

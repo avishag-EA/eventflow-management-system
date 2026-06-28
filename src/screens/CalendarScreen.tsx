@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../store/StoreContext';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isToday } from 'date-fns';
 
 const CalendarScreen: React.FC = () => {
   const { events } = useStore();
