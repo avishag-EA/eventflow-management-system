@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Routes, Route, NavLink, useNavigate } from 'react-router-dom'
-import { Home, Calendar, PlusCircle, BarChart2, Users, Settings, LogOut, UserCircle, MessageSquare, List, DollarSign } from 'lucide-react'
+import { Home, Calendar, PlusCircle, BarChart2, Users, Settings, LogOut, UserCircle, MessageSquare, List, DollarSign, Menu, X } from 'lucide-react'
 import { useStore } from './store/StoreContext'
 
 // Screen Imports
@@ -20,6 +21,9 @@ import Login from './screens/Login'
 function App() {
   const { currentUser, setCurrentUser } = useStore();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   // Simple login screen if no user
   if (!currentUser) {
@@ -44,50 +48,54 @@ function App() {
   return (
     <div className="app-container">
       {/* Sidebar */}
-      <div className="sidebar">
-        <div className="sidebar-header">
-          ניהול אירועים
+      <div className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>ניהול אירועים</span>
+          <button className="btn mobile-menu-btn" onClick={closeMobileMenu} style={{ padding: 0, color: 'var(--color-white)' }}>
+            <X size={24} />
+          </button>
         </div>
         <div className="sidebar-nav">
-          <NavLink to="/" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+          <NavLink to="/" onClick={closeMobileMenu} className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
             <Home size={20} />
             ראשי
           </NavLink>
-          <NavLink to="/create-event" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+          <NavLink to="/create-event" onClick={closeMobileMenu} className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
             <PlusCircle size={20} />
             יצירת אירוע
           </NavLink>
-          <NavLink to="/events" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+          <NavLink to="/events" onClick={closeMobileMenu} className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
             <List size={20} />
-            כל האירועים
+            רשימת אירועים
           </NavLink>
-          <NavLink to="/calendar" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+          <NavLink to="/calendar" onClick={closeMobileMenu} className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
             <Calendar size={20} />
-            לוח שנה
+            יומן משרדי
           </NavLink>
-          <NavLink to="/reports" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+          <NavLink to="/reports" onClick={closeMobileMenu} className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
             <BarChart2 size={20} />
-            דוחות
+            דוחות וסיכומים
           </NavLink>
-          <NavLink to="/vendors" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+          <NavLink to="/vendors" onClick={closeMobileMenu} className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
             <Users size={20} />
             ספר ספקים
           </NavLink>
-          <NavLink to="/feedback" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+          <NavLink to="/feedback" onClick={closeMobileMenu} className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
             <MessageSquare size={20} />
             משובים
           </NavLink>
-          <NavLink to="/profile" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+          <NavLink to="/profile" onClick={closeMobileMenu} className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
             <UserCircle size={20} />
             פרופיל אישי
           </NavLink>
           {currentUser.role === 'admin' && (
             <>
-              <NavLink to="/admin-budgets" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+              <div style={{ padding: '1rem 1.5rem', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--color-blue-light)', fontWeight: 'bold' }}>ניהול מערכת</div>
+              <NavLink to="/admin-budgets" onClick={closeMobileMenu} className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
                 <DollarSign size={20} />
-                ניהול תקציבים
+                ניהול תקציב (Admin)
               </NavLink>
-              <NavLink to="/settings" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+              <NavLink to="/settings" onClick={closeMobileMenu} className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
                 <Settings size={20} />
                 הגדרות מערכת
               </NavLink>
@@ -109,21 +117,37 @@ function App() {
         </div>
       </div>
 
+      {/* Mobile Overlay */}
+      <div 
+        className={`sidebar-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+        onClick={closeMobileMenu}
+      ></div>
+
       {/* Main Content */}
       <div className="main-content">
         <div className="topbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontWeight: 600, color: 'var(--color-blue-dark)' }}>
-            {currentUser.profilePicture ? (
-              <img src={currentUser.profilePicture} alt="Profile" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-            ) : (
-              <UserCircle size={40} color="var(--color-blue-main)" />
-            )}
-            <div>
-              <div style={{ lineHeight: '1.2' }}>שלום, {currentUser.name}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', fontWeight: 400 }}>{currentUser.jobTitle || (currentUser.role === 'admin' ? 'מנהל' : 'מארגן')}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button 
+              className="btn mobile-menu-btn" 
+              style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', background: 'var(--color-blue-pale)', borderRadius: '4px' }}
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu size={24} color="var(--color-blue-dark)" />
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 600, color: 'var(--color-blue-dark)' }}>
+              {currentUser.profilePicture ? (
+                <img src={currentUser.profilePicture} alt="Profile" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                <UserCircle size={40} color="var(--color-blue-main)" />
+              )}
+              <div style={{ display: 'none' }}>{/* Hide on mobile if needed, but flex will handle it. We can keep it or use media queries */}</div>
+              <div className="topbar-user-info" style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ lineHeight: '1.2' }}>שלום, {currentUser.name}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', fontWeight: 400 }}>{currentUser.jobTitle || (currentUser.role === 'admin' ? 'מנהל' : 'מארגן')}</div>
+              </div>
             </div>
           </div>
-          <div>
+          <div style={{ flexShrink: 0 }}>
             <button className="btn btn-primary" onClick={() => navigate('/create-event')}>
               <PlusCircle size={16} style={{ marginLeft: '0.5rem' }}/>
               אירוע חדש

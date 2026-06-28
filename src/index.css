@@ -198,3 +198,80 @@ input:focus, select:focus, textarea:focus {
   font-weight: 600;
   color: var(--color-text-main);
 }
+
+.mobile-menu-btn {
+  display: none !important;
+}
+
+/* Responsive Mobile Layout */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: 0;
+    right: -250px;
+    height: 100vh;
+    z-index: 1000;
+    transition: right 0.3s ease;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+  }
+  
+  .sidebar.mobile-open {
+    right: 0;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    display: none;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+  
+  .grid-2, .grid-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .page-content {
+    padding: 1rem;
+  }
+  
+  .card {
+    padding: 1rem;
+  }
+  
+  .topbar {
+    padding: 0 1rem;
+  }
+
+  /* Make all tables scrollable horizontally on mobile */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  /* For full width tables */
+  table th, table td {
+    white-space: nowrap;
+  }
+  
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+  
+  .topbar-user-info {
+    display: none !important;
+  }
+}
