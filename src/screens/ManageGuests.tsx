@@ -9,7 +9,7 @@ const locationOptions = ['אולם כנסים מרכזי', 'חדר ישיבות 
 const ManageGuests: React.FC = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
-  const { events, currentUser, updateEvent, deleteEvent, categorySoftCaps, eventTypes } = useStore();
+  const { events, currentUser, updateEvent, deleteEvent, categorySoftCaps, eventTypes, vendors, addPendingVendor } = useStore();
   const event = events.find(e => e.id === eventId);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -22,6 +22,7 @@ const ManageGuests: React.FC = () => {
 
   const [isMultiDay, setIsMultiDay] = useState(false);
   const [endDateError, setEndDateError] = useState(false);
+  const [requestVendorAddition, setRequestVendorAddition] = useState(false);
 
   const [newExpense, setNewExpense] = useState({ vendor: '', description: '', amount: '', category: 'אחר' as ExpenseCategory, requirements: '' });
 
@@ -71,16 +72,37 @@ const ManageGuests: React.FC = () => {
   };
 
   const handleSave = () => {
-    try {
-      if (eventId) {
-        updateEvent(eventId, editedEvent);
-        setIsEditing(false);
-        navigate(`/manage-guests/${eventId}`, { replace: true });
-      } else {
-        navigate('/');
+    if (eventId) {
+      if (isMultiDay && endDateError) {
+        alert("תאריך הסיום אינו יכול להיות מוקדם מתאריך ההתחלה");
+        return;
       }
-    } catch (error) {
-      console.error('Error saving event:', error);
+      
+      const finalEvent = { ...editedEvent };
+      if (!isMultiDay) {
+        finalEvent.endDate = undefined;
+      }
+      
+      const isCustomVendor = finalEvent.resources?.vendorId === 'other';
+      const finalCustomVendorName = isCustomVendor ? finalEvent.resources?.customVendorName || '' : undefined;
+
+      if (isCustomVendor && requestVendorAddition && finalCustomVendorName && currentUser) {
+        addPendingVendor({
+          name: finalCustomVendorName,
+          service: finalEvent.resources?.catering || 'כללי',
+          submittedBy: currentUser.name
+        });
+      }
+
+      finalEvent.resources = {
+        ...finalEvent.resources!,
+        customVendorName: finalCustomVendorName
+      };
+
+      updateEvent(eventId, finalEvent);
+      setIsEditing(false);
+      navigate(`/manage-guests/${eventId}`, { replace: true });
+    } else {
       navigate('/');
     }
   };
@@ -210,10 +232,17 @@ const ManageGuests: React.FC = () => {
     : currentResources.catering === 'basic' ? 'קייטרינג בסיסי'
     : currentResources.catering === 'premium' ? 'קייטרינג פרמיום'
     : currentResources.catering === 'special' ? 'מנות מיוחדות'
-    : currentResources.catering.split(',').map((c: string) => 
-        c === 'sandwiches' ? "סנדוויצ'ים וארוחות ארוזות" : 
-        c === 'bbq' ? 'על האש / מנגל - בשרים וציוד' : c
-      ).join(' + ');
+    : 'קייטרינג בהתאמה אישית (טיול/חוץ)';
+
+  let vendorDisplay = '';
+  if (event.resources.vendorId) {
+    if (event.resources.vendorId === 'other') {
+      vendorDisplay = event.resources.customVendorName || 'ספק אחר';
+    } else {
+      const v = vendors.find(ven => ven.id === event.resources.vendorId);
+      vendorDisplay = v ? v.name : '';
+    }
+  }
 
   const expensesList = event.expenses || [];
   const totalSpent = expensesList.reduce((sum, exp) => sum + exp.amount, 0);
@@ -521,7 +550,49 @@ const ManageGuests: React.FC = () => {
               </select>
             )
           ) : (
-            <p style={{ marginTop: '0.5rem', color: 'var(--color-text-main)', fontSize: '1.1rem' }}>{cateringLabel}</p>
+            <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <p style={{ color: 'var(--color-text-main)', fontSize: '1.1rem', margin: 0 }}>{cateringLabel}</p>
+              {vendorDisplay && <p style={{ color: 'var(--color-blue-main)', fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>ספק: {vendorDisplay}</p>}
+            </div>
+          )}
+
+          {/* Vendor Selection (Edit Mode) */}
+          {isEditing && currentResources.catering && currentResources.catering !== 'none' && (
+            <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--color-bg-main)', borderRadius: '4px', border: '1px solid #eee', width: '100%', textAlign: 'right' }}>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--color-blue-dark)' }}>ספק (מתוך ספר הספקים)</label>
+              <select 
+                value={currentResources.vendorId || ''} 
+                onChange={e => updateResource('vendorId', e.target.value)}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+              >
+                <option value="">-- בחר ספק --</option>
+                {vendors.filter(v => v.cateringTypes?.some(type => currentResources.catering.includes(type))).map(v => (
+                  <option key={v.id} value={v.id}>{v.name} ({v.rating} כוכבים)</option>
+                ))}
+                <option value="other">אחר (הזנה ידנית)</option>
+              </select>
+              
+              {currentResources.vendorId === 'other' && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <input 
+                    type="text" 
+                    value={currentResources.customVendorName || ''}
+                    onChange={e => updateResource('customVendorName', e.target.value)}
+                    placeholder="שם הספק המבוקש..."
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                    required
+                  />
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginTop: '0.5rem', fontSize: '0.9rem' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={requestVendorAddition} 
+                      onChange={(e) => setRequestVendorAddition(e.target.checked)} 
+                    />
+                    בקש הוספה לספר הספקים
+                  </label>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

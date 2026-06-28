@@ -13,7 +13,8 @@ const EventWizard: React.FC = () => {
   
   const [locationSelect, setLocationSelect] = useState(locationOptions[0]);
   const [customLocation, setCustomLocation] = useState('');
-  const { addEvent, currentUser, eventTypes } = useStore();
+  const { addEvent, currentUser, eventTypes, vendors, addPendingVendor } = useStore();
+  const [requestVendorAddition, setRequestVendorAddition] = useState(false);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<Partial<Event>>({
@@ -128,11 +129,26 @@ const EventWizard: React.FC = () => {
     
     if (currentUser) {
       const finalLocation = locationSelect === 'אחר' ? customLocation : locationSelect;
+      const isCustomVendor = formData.resources?.vendorId === 'other';
+      const finalCustomVendorName = isCustomVendor ? formData.resources?.customVendorName || '' : undefined;
+
+      if (isCustomVendor && requestVendorAddition && finalCustomVendorName) {
+        addPendingVendor({
+          name: finalCustomVendorName,
+          service: formData.resources?.catering || 'כללי',
+          submittedBy: currentUser.name
+        });
+      }
+
       addEvent({
         ...formData as Omit<Event, 'id'>,
         location: finalLocation,
         endDate: isMultiDay ? formData.endDate : undefined,
-        organizerId: currentUser.id
+        organizerId: currentUser.id,
+        resources: {
+          ...formData.resources!,
+          customVendorName: finalCustomVendorName
+        }
       });
       navigate('/');
     }
@@ -315,6 +331,47 @@ const EventWizard: React.FC = () => {
                   <option value="premium">פרמיום (ארוחה מלאה)</option>
                   <option value="special">מנות מיוחדות (טבעוני, צמחוני, ללא גלוטן)</option>
                 </select>
+              )}
+
+              {/* Vendor Selection */}
+              {formData.resources?.catering && formData.resources?.catering !== 'none' && (
+                <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--color-bg-main)', borderRadius: '4px', border: '1px solid #eee' }}>
+                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--color-blue-dark)' }}>ספק (מתוך ספר הספקים)</label>
+                  <select 
+                    name="vendorId" 
+                    value={formData.resources?.vendorId || ''} 
+                    onChange={handleResourceChange as any} 
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                  >
+                    <option value="">-- בחר ספק --</option>
+                    {vendors.filter(v => v.cateringTypes?.some(type => formData.resources?.catering.includes(type))).map(v => (
+                      <option key={v.id} value={v.id}>{v.name} ({v.rating} כוכבים)</option>
+                    ))}
+                    <option value="other">אחר (הזנה ידנית)</option>
+                  </select>
+                  
+                  {formData.resources?.vendorId === 'other' && (
+                    <div style={{ marginTop: '0.5rem' }}>
+                      <input 
+                        type="text" 
+                        name="customVendorName"
+                        value={formData.resources?.customVendorName || ''}
+                        onChange={handleResourceChange as any}
+                        placeholder="שם הספק המבוקש..."
+                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                        required
+                      />
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginTop: '0.5rem', fontSize: '0.9rem' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={requestVendorAddition} 
+                          onChange={(e) => setRequestVendorAddition(e.target.checked)} 
+                        />
+                        בקש הוספה לספר הספקים
+                      </label>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 

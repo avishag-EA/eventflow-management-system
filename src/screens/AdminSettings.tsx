@@ -3,7 +3,7 @@ import { Settings, Shield, Bell } from 'lucide-react';
 import { useStore } from '../store/StoreContext';
 
 const AdminSettings: React.FC = () => {
-  const { eventTypes, setEventTypes } = useStore();
+  const { eventTypes, setEventTypes, pendingVendors, approvePendingVendor, rejectPendingVendor } = useStore();
   const [newEventType, setNewEventType] = useState('');
 
   const handleAddEventType = () => {
@@ -83,6 +83,63 @@ const AdminSettings: React.FC = () => {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        {/* Pending Vendors Approvals */}
+        <div className="card" style={{ gridColumn: '1 / -1' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', color: 'var(--color-blue-main)' }}>
+            <Shield size={24} />
+            <h2 style={{ margin: 0 }}>בקשות להוספת ספקים</h2>
+          </div>
+          {pendingVendors.length === 0 ? (
+            <p style={{ color: 'var(--color-text-light)' }}>אין בקשות ממתינות.</p>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #eee', textAlign: 'right' }}>
+                  <th style={{ padding: '0.5rem' }}>שם הספק</th>
+                  <th style={{ padding: '0.5rem' }}>שירות רלוונטי</th>
+                  <th style={{ padding: '0.5rem' }}>הוגש ע"י</th>
+                  <th style={{ padding: '0.5rem' }}>פעולות</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingVendors.map(pv => (
+                  <tr key={pv.id} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '0.5rem', fontWeight: 600 }}>{pv.name}</td>
+                    <td style={{ padding: '0.5rem' }}>{pv.service}</td>
+                    <td style={{ padding: '0.5rem' }}>{pv.submittedBy}</td>
+                    <td style={{ padding: '0.5rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button 
+                          className="btn btn-primary" 
+                          style={{ padding: '0.25rem 0.75rem', fontSize: '0.9rem' }}
+                          onClick={() => {
+                            if(window.confirm(`האם לאשר את הספק "${pv.name}"?`)) {
+                              approvePendingVendor(pv.id);
+                            }
+                          }}
+                        >
+                          אשר הוספה
+                        </button>
+                        <button 
+                          className="btn btn-secondary" 
+                          style={{ padding: '0.25rem 0.75rem', fontSize: '0.9rem', color: 'var(--color-danger)' }}
+                          onClick={() => {
+                            if(window.confirm(`האם לדחות את הספק "${pv.name}"?`)) {
+                              rejectPendingVendor(pv.id);
+                            }
+                          }}
+                        >
+                          דחה
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <div className="card" style={{ gridColumn: '1 / -1' }}>

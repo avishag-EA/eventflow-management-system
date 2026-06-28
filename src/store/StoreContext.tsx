@@ -36,6 +36,8 @@ export type Event = {
     tech: boolean;
     av: boolean;
     catering: string;
+    vendorId?: string;
+    customVendorName?: string;
     seating: boolean;
     lecture: boolean;
     gifts: boolean;
@@ -59,6 +61,15 @@ export type Vendor = {
   phone: string;
   email: string;
   rating: number; // 1-5
+  cateringTypes?: string[];
+};
+
+export type PendingVendor = {
+  id: string;
+  name: string;
+  service: string;
+  submittedBy: string;
+  status: 'pending' | 'approved' | 'rejected';
 };
 
 export type GlobalBudgetSettings = {
@@ -100,6 +111,11 @@ type StoreContextType = {
 
   eventTypes: string[];
   setEventTypes: React.Dispatch<React.SetStateAction<string[]>>;
+
+  pendingVendors: PendingVendor[];
+  addPendingVendor: (vendor: Omit<PendingVendor, 'id' | 'status'>) => void;
+  approvePendingVendor: (id: string) => void;
+  rejectPendingVendor: (id: string) => void;
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -124,8 +140,22 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const [events, setEvents] = useState<Event[]>(() => loadFromStorage('app_events', []));
-  const [vendors, setVendors] = useState<Vendor[]>(() => loadFromStorage('app_vendors', []));
-  const [eventTypes, setEventTypes] = useState<string[]>(() => loadFromStorage('app_event_types', []));
+  const [vendors, setVendors] = useState<Vendor[]>(() => loadFromStorage('app_vendors', [
+    { id: 'v1', name: 'טעים לי קייטרינג', service: 'קייטרינג בסיסי', phone: '050-1234567', email: 'contact@teimli.co.il', rating: 4, cateringTypes: ['basic'] },
+    { id: 'v2', name: 'הגברה תאורה פלוס', service: 'הגברה ותאורה', phone: '052-9876543', email: 'info@lightplus.co.il', rating: 5 },
+    { id: 'v3', name: 'שף פרטי - גורמה', service: 'קייטרינג פרמיום', phone: '054-5556667', email: 'chef@gourmet.co.il', rating: 5, cateringTypes: ['premium'] },
+    { id: 'v4', name: 'הבשרים של איציק', service: 'על האש', phone: '053-4443332', email: 'itzik@bbq.co.il', rating: 4, cateringTypes: ['bbq'] },
+    { id: 'v5', name: 'טבעונית טעימה', service: 'מנות מיוחדות', phone: '055-1112223', email: 'vegan@tasty.co.il', rating: 5, cateringTypes: ['special'] }
+  ]));
+  const [eventTypes, setEventTypes] = useState<string[]>(() => loadFromStorage('app_event_types', [
+    'הדרכת עובדים',
+    'כנס מקצועי',
+    'גיבוש מחלקתי',
+    'הרמת כוסית',
+    'טיול'
+  ]));
+  
+  const [pendingVendors, setPendingVendors] = useState<PendingVendor[]>(() => loadFromStorage('app_pending_vendors', []));
   
   const [globalBudgetSettings, setGlobalBudgetSettings] = useState<GlobalBudgetSettings>(() => loadFromStorage('app_global_budget', {
     annualGlobalBudget: 1500000,
@@ -149,6 +179,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => { localStorage.setItem('app_global_budget', JSON.stringify(globalBudgetSettings)); }, [globalBudgetSettings]);
   useEffect(() => { localStorage.setItem('app_category_caps', JSON.stringify(categorySoftCaps)); }, [categorySoftCaps]);
   useEffect(() => { localStorage.setItem('app_audit_logs', JSON.stringify(auditLogs)); }, [auditLogs]);
+
+  useEffect(() => {
+    localStorage.setItem('app_pending_vendors', JSON.stringify(pendingVendors));
+  }, [pendingVendors]);
 
   const addEvent = (eventData: Omit<Event, 'id'>) => {
     const newEvent = { ...eventData, id: Math.random().toString(36).substr(2, 9) };
@@ -193,6 +227,36 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setAuditLogs(prevLogs => [newLog, ...prevLogs]);
   };
 
+  const addPendingVendor = (vendor: Omit<PendingVendor, 'id' | 'status'>) => {
+    const newVendor: PendingVendor = {
+      ...vendor,
+      id: Math.random().toString(36).substr(2, 9),
+      status: 'pending'
+    };
+    setPendingVendors([...pendingVendors, newVendor]);
+  };
+
+  const approvePendingVendor = (id: string) => {
+    const vendorToApprove = pendingVendors.find(v => v.id === id);
+    if (vendorToApprove) {
+      const newGlobalVendor: Vendor = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: vendorToApprove.name,
+        service: vendorToApprove.service,
+        phone: '',
+        email: '',
+        rating: 5,
+        cateringTypes: [vendorToApprove.service] // Map service to catering types roughly
+      };
+      setVendors([...vendors, newGlobalVendor]);
+      setPendingVendors(pendingVendors.filter(v => v.id !== id));
+    }
+  };
+
+  const rejectPendingVendor = (id: string) => {
+    setPendingVendors(pendingVendors.filter(v => v.id !== id));
+  };
+
   return (
     <StoreContext.Provider value={{ 
       currentUser, setCurrentUser, updateUser, 
@@ -203,7 +267,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       globalBudgetSettings, setGlobalBudgetSettings,
       categorySoftCaps, setCategorySoftCaps,
       auditLogs,
-      eventTypes, setEventTypes
+      eventTypes, setEventTypes,
+      pendingVendors, addPendingVendor, approvePendingVendor, rejectPendingVendor
     }}>
       {children}
     </StoreContext.Provider>
