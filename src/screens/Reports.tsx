@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../store/StoreContext';
-import { BarChart2, DollarSign, Users, Star } from 'lucide-react';
+import { BarChart2, DollarSign, Star } from 'lucide-react';
 
 const Reports: React.FC = () => {
   const { events, vendors } = useStore();

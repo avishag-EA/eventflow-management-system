@@ -1,15 +1,17 @@
 import { Routes, Route, NavLink, useNavigate } from 'react-router-dom'
-import { Home, Calendar, PlusCircle, BarChart2, Users, Settings, LogOut, CheckCircle, UserCircle, MessageSquare } from 'lucide-react'
+import { Home, Calendar, PlusCircle, BarChart2, Users, Settings, LogOut, UserCircle, MessageSquare, List, DollarSign } from 'lucide-react'
 import { useStore } from './store/StoreContext'
 
 // Screen Imports
 import Dashboard from './screens/Dashboard'
 import EventWizard from './screens/EventWizard'
+import EventsList from './screens/EventsList'
 import CalendarScreen from './screens/CalendarScreen'
 import Reports from './screens/Reports'
 import VendorDirectory from './screens/VendorDirectory'
 import GuestPortal from './screens/GuestPortal'
 import AdminSettings from './screens/AdminSettings'
+import AdminBudgets from './screens/AdminBudgets'
 import UserProfile from './screens/UserProfile'
 import ManageGuests from './screens/ManageGuests'
 import FeedbackScreen from './screens/FeedbackScreen'
@@ -55,6 +57,10 @@ function App() {
             <PlusCircle size={20} />
             יצירת אירוע
           </NavLink>
+          <NavLink to="/events" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+            <List size={20} />
+            כל האירועים
+          </NavLink>
           <NavLink to="/calendar" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
             <Calendar size={20} />
             לוח שנה
@@ -76,10 +82,16 @@ function App() {
             פרופיל אישי
           </NavLink>
           {currentUser.role === 'admin' && (
-            <NavLink to="/settings" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
-              <Settings size={20} />
-              הגדרות
-            </NavLink>
+            <>
+              <NavLink to="/admin-budgets" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+                <DollarSign size={20} />
+                ניהול תקציבים
+              </NavLink>
+              <NavLink to="/settings" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+                <Settings size={20} />
+                הגדרות מערכת
+              </NavLink>
+            </>
           )}
         </div>
         <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
@@ -123,6 +135,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/create-event" element={<EventWizard />} />
+            <Route path="/events" element={<EventsList />} />
             <Route path="/calendar" element={<CalendarScreen />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/vendors" element={<VendorDirectory />} />
@@ -130,6 +143,7 @@ function App() {
             <Route path="/manage-guests/:eventId" element={<ManageGuests />} />
             <Route path="/profile" element={<UserProfile />} />
             <Route path="/settings" element={<AdminSettings />} />
+            <Route path="/admin-budgets" element={<AdminBudgets />} />
           </Routes>
         </div>
       </div>
